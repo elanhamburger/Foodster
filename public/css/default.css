@@ -27,6 +27,12 @@ body {
 	overflow-x: hidden;
 }
 
+#location-error {
+	font-size: .4em;
+	display: none;
+	margin-top: 8px;
+}
+
 a {
 	color: #888;
 	text-decoration: none;
