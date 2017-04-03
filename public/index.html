@@ -28,84 +28,129 @@
 						<option value="Japanese">Japanese</option>
 						<option value="American">American</option>
 					</select>
-					food at
-					<br /> 
-					<select name="open_at">
-						<option value="1" selected>anytime</option>
-					 	<option value="2">7 PM</option>
-					 	<option value="3">8 PM</option>
-					 	<option value="4">9 PM</option>
-					</select>
-					near <input type="text" value="" placeholder="me" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>" name="location" />
+					food near
+					<input type="text" value="" placeholder="me" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>" name="location" />
 					<div class="nl-submit-wrap">
-						<button class="nl-submit" type="submit">Find a restaurant</button>
+						<button class="nl-submit" type="submit">Fetching location...</button>
 					</div>
+					<div id="location-error">Enter a location or wait for us to find you</div>
 					<div class="nl-overlay"></div>
 				</form>
 			</div>
 		</div>
 		<div id="map"></div>
+		<div id="results-frame">
+	        <div id="results">
+	        </div>
+	    </div>
 		<script src="js/nlform.js"></script>
 		<script>
 			var nlform = new NLForm(document.getElementById('nl-form'));
 		</script>
 		<script>
-			var map, locationGuess = { latitude: 0, longitude: 0 };
+			var map, locationGuess;
 			var form = document.getElementById('nl-form');
 			var mapDiv = document.getElementById('map');
+			var locationInput = document.getElementsByName('location')[0];
 
 			if (navigator.geolocation) {
 		        navigator.geolocation.getCurrentPosition(function(l) {
 		        	locationGuess = l;
+		        	document.getElementsByClassName('nl-submit')[0].innerHTML = "Find a restaurant";
 		        });
 		    }
 
 			form.addEventListener('submit', function(e) {
 				e.preventDefault();
 
-				var formData = new FormData(form);
-				var request = [];
-				for(var pair of formData.entries()) {
-				   request.push(pair[0] + '=' + pair[1]);
-				}
-				request.push('latitude=' + locationGuess.coords.latitude);
-				request.push('longitude=' + locationGuess.coords.longitude);
+				if (locationGuess || locationInput.value.length > 0) {
+					var formData = new FormData(form);
+					var request = [];
+					for(var pair of formData.entries()) {
+					   request.push(pair[0] + '=' + pair[1]);
+					}
+					request.push('latitude=' + locationGuess.coords.latitude);
+					request.push('longitude=' + locationGuess.coords.longitude);
 
-				var xhr = new XMLHttpRequest();
-				xhr.open("POST", "/query");
-				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhr.onreadystatechange = function() {
-					if (this.readyState == 4 && this.status == 200) {
-						response = JSON.parse(this.responseText);
-						console.log(response);
-						var b = response.businesses;
-						var bounds = new google.maps.LatLngBounds();
-						for (var i = 0; i < b.length; i++) {
-							new google.maps.Marker({
-					        	position: {
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST", "/query");
+					xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					xhr.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+							response = JSON.parse(this.responseText);
+							console.log(response);
+							var b = response.businesses;
+							var bounds = new google.maps.LatLngBounds();
+							var results = document.getElementById('results');
+							for (var i = 0; i < b.length; i++) {
+								// Generate the marker
+								var marker = new google.maps.Marker({
+						        	position: {
+						        		lat: b[i].coordinates.latitude,
+						        		lng: b[i].coordinates.longitude
+						        	},
+						        	map: map,
+						        	title: b[i].name
+						        });
+						        marker.addListener('click', function() {
+						        	map.setCenter(this.position);
+						        	var info = new google.maps.InfoWindow({
+						        		content: this.title,
+						        	});
+						        	info.open(map, this);
+						        	map.setZoom(16);
+						        });
+						        // Include the marker in the new viewport
+						        bounds.extend({
 					        		lat: b[i].coordinates.latitude,
 					        		lng: b[i].coordinates.longitude
-					        	},
-					        	map: map,
-					        	title: b[i].name
-					        });
-					        bounds.extend({
-				        		lat: b[i].coordinates.latitude,
-				        		lng: b[i].coordinates.longitude
-				        	});
-						}
-						map.setCenter(bounds.getCenter());
-						map.fitBounds(bounds);
+					        	});
+					        	// Add the restaurant to the results list
+					        	var result = document.createElement('div');
+					        	result.className = 'result';
+						        result.innerHTML = '<h3>' + b[i].name + '</h3>' + 
+						        	'<p>' + b[i].location.address1 + '</p>' + 
+						        	'<p>' + b[i].location.city + ', ' + b[i].location.state + ' ' + b[i].location.zip_code + '</p>' + 
+						        	'<p>' + b[i].price + ' • ' + b[i].rating + ' &starf;</p>';
+						        result.dataset.latitude = b[i].coordinates.latitude;
+						        result.dataset.longitude = b[i].coordinates.longitude;
+						        result.dataset.name = b[i].name;
+						        // On click, center the map on the restaurant
+						        result.addEventListener('click', function() {
+						        	let latitude = this.dataset.latitude;
+						        	let longitude = this.dataset.longitude;
+						        	let name = this.dataset.name;
+						        	map.setCenter({
+						        		lat: parseFloat(latitude),
+						        		lng: parseFloat(longitude)
+						        	});
+						        	var info = new google.maps.InfoWindow({
+						        		content: name,
+						        		position: {
+							        		lat: parseFloat(latitude) + 0.00065,
+							        		lng: parseFloat(longitude)
+							        	}
+						        	});
+						        	info.open(map);
+						        	map.setZoom(16);
+						        });
+						        results.appendChild(result);
+							}
+							map.setCenter(bounds.getCenter());
+							map.fitBounds(bounds);
 
-						mapDiv.style.zIndex = "0";
+							mapDiv.style.zIndex = "0";
+						}
 					}
+					xhr.send(request.join('&'));
+					document.getElementsByClassName('nl-submit')[0].innerHTML = 'Loading...';
+				} else {
+					document.getElementById('location-error').style.display = 'block';
 				}
-				xhr.send(request.join('&'));
-				document.getElementsByClassName('nl-submit')[0].innerHTML = 'Loading...';
 			});
 
 			function initMap() {
-		      	// Create a map object and specify the DOM element for display.
+		      	// Create a map object and specify the DOM element for display
 		        map = new google.maps.Map(document.getElementById('map'), {
 		          	center: {lat: 38.9318846, lng: -77.2464396},
 		          	scrollwheel: false,
