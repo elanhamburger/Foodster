@@ -40,6 +40,6 @@ app.post('/query', function(req, res) {
 	});
 });
 
-app.listen(443, function() {
-	console.log('Listening on port 443');
+app.listen(process.env.PORT || 3000, function() {
+	console.log('Listening on port ' + process.env.PORT || 3000);
 });
