@@ -17,14 +17,25 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/query', function(req, res) {
-	yelp.search({
+	console.log(req.body);
+
+	const query = {
 		term: req.body.categories,
-		location: '90210',
 		price: req.body.price,
-	}).then(function (data) {
+	}
+
+	if (req.body.location.length > 0) {
+		query.location = req.body.location;
+	} else {
+		query.latitude = req.body.latitude;
+		query.longitude = req.body.longitude;
+	}
+
+	yelp.search(query)
+	.then(function (data) {
 	    res.send(data);
 	}).catch(function (err) {
-		res.send('An error was encountered: ' + err);
+		res.sendStatus(500);
 	    console.log(err);
 	});
 });

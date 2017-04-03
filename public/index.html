@@ -36,7 +36,7 @@
 					 	<option value="3">8 PM</option>
 					 	<option value="4">9 PM</option>
 					</select>
-					near <input type="text" value="" placeholder="me" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>"/>
+					near <input type="text" value="" placeholder="me" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>" name="location" />
 					<div class="nl-submit-wrap">
 						<button class="nl-submit" type="submit">Find a restaurant</button>
 					</div>
@@ -47,37 +47,72 @@
 		<div id="map"></div>
 		<script src="js/nlform.js"></script>
 		<script>
-			var nlform = new NLForm( document.getElementById( 'nl-form' ) );
+			var nlform = new NLForm(document.getElementById('nl-form'));
 		</script>
 		<script>
+			var map, locationGuess = { latitude: 0, longitude: 0 };
 			var form = document.getElementById('nl-form');
-			var map = document.getElementById('map');
+			var mapDiv = document.getElementById('map');
+
+			if (navigator.geolocation) {
+		        navigator.geolocation.getCurrentPosition(function(l) {
+		        	locationGuess = l;
+		        });
+		    }
 
 			form.addEventListener('submit', function(e) {
 				e.preventDefault();
 
+				var formData = new FormData(form);
+				var request = [];
+				for(var pair of formData.entries()) {
+				   request.push(pair[0] + '=' + pair[1]);
+				}
+				request.push('latitude=' + locationGuess.coords.latitude);
+				request.push('longitude=' + locationGuess.coords.longitude);
+
 				var xhr = new XMLHttpRequest();
 				xhr.open("POST", "/query");
+				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				xhr.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
 						response = JSON.parse(this.responseText);
 						console.log(response);
+						var b = response.businesses;
+						var bounds = new google.maps.LatLngBounds();
+						for (var i = 0; i < b.length; i++) {
+							new google.maps.Marker({
+					        	position: {
+					        		lat: b[i].coordinates.latitude,
+					        		lng: b[i].coordinates.longitude
+					        	},
+					        	map: map,
+					        	title: b[i].name
+					        });
+					        bounds.extend({
+				        		lat: b[i].coordinates.latitude,
+				        		lng: b[i].coordinates.longitude
+				        	});
+						}
+						map.setCenter(bounds.getCenter());
+						map.fitBounds(bounds);
+
+						mapDiv.style.zIndex = "0";
 					}
 				}
-				map.style.display = "block";
-				xhr.send(new FormData(form));
+				xhr.send(request.join('&'));
+				document.getElementsByClassName('nl-submit')[0].innerHTML = 'Loading...';
 			});
+
+			function initMap() {
+		      	// Create a map object and specify the DOM element for display.
+		        map = new google.maps.Map(document.getElementById('map'), {
+		          	center: {lat: 38.9318846, lng: -77.2464396},
+		          	scrollwheel: false,
+		          	zoom: 8
+		        });
+		    }
 		</script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhre8o-EqjJ-ruy-t5YFe-5dNjyWasnOc&callback=initMap" async defer></script>
-		<script>
-	      function initMap() {
-	        // Create a map object and specify the DOM element for display.
-	        var map = new google.maps.Map(document.getElementById('map'), {
-	          center: {lat: -34.397, lng: 150.644},
-	          scrollwheel: false,
-	          zoom: 8
-	        });
-	      }
-    </script>
 	</body>
 </html>
