@@ -6,6 +6,7 @@
 		<title>Foodster</title>
 		<link rel="stylesheet" type="text/css" href="css/default.css" />
 		<link rel="stylesheet" type="text/css" href="css/component.css" />
+		<link rel="stylesheet" type="text/css" href="css/map.css" />
 		<script src="js/modernizr.custom.js"></script>
 	</head>
 	<body class="nl-blurred">
@@ -13,40 +14,70 @@
 			<div class="main clearfix">
 				<form id="nl-form" class="nl-form">
 					I'm feeling like 
-					<select>
-						<option value="1" selected>any food</option>
-						<option value="2">Indian</option>
-						<option value="3">French</option>
-						<option value="4">Japanese</option>
-						<option value="2">Italian</option>
+					<select name="price">
+						<option value="1,2,3,4" selected>any priced</option>
+						<option value="1">cheap</option>
+						<option value="2">moderate</option>
+						<option value="3">expensive</option>
+						<option value="4">fancy</option>
 					</select>
-					<br />in a
-					<select>
-						<option value="1" selected>standard</option>
-						<option value="2">fancy</option>
-						<option value="3">hip</option>
-						<option value="4">traditional</option>
-						<option value="2">romantic</option>
+					<br/>
+					<select name="categories">
+						<option value="Italian" selected>Italian</option>
+						<option value="Mexican">Mexican</option>
+						<option value="Japanese">Japanese</option>
+						<option value="American">American</option>
 					</select>
-					restaurant
-					<br />at 
-					<select>
+					food at
+					<br /> 
+					<select name="open_at">
 						<option value="1" selected>anytime</option>
-					 	<option value="1">7 p.m.</option>
-					 	<option value="2">8 p.m.</option>
-					 	<option value="3">9 p.m.</option>
+					 	<option value="2">7 PM</option>
+					 	<option value="3">8 PM</option>
+					 	<option value="4">9 PM</option>
 					</select>
-					in <input type="text" value="" placeholder="any city" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>"/>
+					near <input type="text" value="" placeholder="me" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>"/>
 					<div class="nl-submit-wrap">
 						<button class="nl-submit" type="submit">Find a restaurant</button>
 					</div>
 					<div class="nl-overlay"></div>
 				</form>
 			</div>
-		</div><!-- /container -->
+		</div>
+		<div id="map"></div>
 		<script src="js/nlform.js"></script>
 		<script>
 			var nlform = new NLForm( document.getElementById( 'nl-form' ) );
 		</script>
+		<script>
+			var form = document.getElementById('nl-form');
+			var map = document.getElementById('map');
+
+			form.addEventListener('submit', function(e) {
+				e.preventDefault();
+
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/query");
+				xhr.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						response = JSON.parse(this.responseText);
+						console.log(response);
+					}
+				}
+				map.style.display = "block";
+				xhr.send(new FormData(form));
+			});
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhre8o-EqjJ-ruy-t5YFe-5dNjyWasnOc&callback=initMap" async defer></script>
+		<script>
+	      function initMap() {
+	        // Create a map object and specify the DOM element for display.
+	        var map = new google.maps.Map(document.getElementById('map'), {
+	          center: {lat: -34.397, lng: 150.644},
+	          scrollwheel: false,
+	          zoom: 8
+	        });
+	      }
+    </script>
 	</body>
 </html>

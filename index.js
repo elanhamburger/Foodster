@@ -1,4 +1,4 @@
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
 }
 
@@ -10,19 +10,17 @@ const yelp = new Yelp({
 	app_secret: process.env.APP_SECRET
 });
 const app = express();
+const bodyParser = require('body-parser');
 
 app.use(express.static('public'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', function(req, res) {
-	res.send('Hello, World!');
-});
-
-app.get('/go', function(req, res) {
+app.post('/query', function(req, res) {
 	yelp.search({
-		term: 'food',
+		term: req.body.categories,
 		location: '90210',
-		price: '1,2,3',
-		limit: 10
+		price: req.body.price,
 	}).then(function (data) {
 	    res.send(data);
 	}).catch(function (err) {
