@@ -7,3 +7,41 @@
 	left: 0;
 	z-index: -1;
 }
+
+#results-frame {
+	box-sizing: border-box;
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 350px;
+	padding: 12px;
+}
+
+#results-frame * {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+#results {
+	box-sizing: inherit;
+	width: 100%;
+	box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.14);
+	background-color: white;
+	overflow-y: scroll;
+	max-height: 100%;
+}
+
+.result {
+	padding: 8px;
+	display: block;
+}
+
+.result * {
+	margin: 0;
+	padding: 0;
+}
+
+.result:hover {
+	cursor: pointer;
+}
