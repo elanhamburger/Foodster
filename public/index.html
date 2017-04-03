@@ -1,44 +1,52 @@
-<html>
+<!DOCTYPE html>
+<html lang="en" class="no-js">
 	<head>
-		<title>Test</title>
-		<style>
-			body {
-				margin: 0;
-				background-color: #D0ECFA;
-				font-family: Arial, sans-serif;
-				text-align: center;
-			}
-
-			input {
-				width: 50%;
-				border: none;
-				font-size: 2em;
-				padding: 8px;
-				border-radius: 12px;
-			}
-
-			button {
-				display: block;
-				margin: 24px auto;
-			}
-		</style>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+		<title>Foodster</title>
+		<link rel="stylesheet" type="text/css" href="css/default.css" />
+		<link rel="stylesheet" type="text/css" href="css/component.css" />
+		<script src="js/modernizr.custom.js"></script>
 	</head>
-	<body>
-		<h2>I'm looking for...</h2>
-		<input type="text" />
-		<h2>Near</h2>
-		<input type="text" id="location" onclick="getLocation()" />
-		<button>Search!</button>
+	<body class="nl-blurred">
+		<div class="container demo-1">
+			<div class="main clearfix">
+				<form id="nl-form" class="nl-form">
+					I'm feeling like 
+					<select>
+						<option value="1" selected>any food</option>
+						<option value="2">Indian</option>
+						<option value="3">French</option>
+						<option value="4">Japanese</option>
+						<option value="2">Italian</option>
+					</select>
+					<br />in a
+					<select>
+						<option value="1" selected>standard</option>
+						<option value="2">fancy</option>
+						<option value="3">hip</option>
+						<option value="4">traditional</option>
+						<option value="2">romantic</option>
+					</select>
+					restaurant
+					<br />at 
+					<select>
+						<option value="1" selected>anytime</option>
+					 	<option value="1">7 p.m.</option>
+					 	<option value="2">8 p.m.</option>
+					 	<option value="3">9 p.m.</option>
+					</select>
+					in <input type="text" value="" placeholder="any city" data-subline="For example: <em>Los Angeles</em> or <em>New York</em>"/>
+					<div class="nl-submit-wrap">
+						<button class="nl-submit" type="submit">Find a restaurant</button>
+					</div>
+					<div class="nl-overlay"></div>
+				</form>
+			</div>
+		</div><!-- /container -->
+		<script src="js/nlform.js"></script>
 		<script>
-			function getLocation() {
-			    if (navigator.geolocation) {
-			        navigator.geolocation.getCurrentPosition(function(position) {
-			    		document.getElementById("location").value = position.coords.latitude;
-					});
-			    } else {
-			        console.log("Geolocation is not supported by this browser.");
-			    }
-			}
+			var nlform = new NLForm( document.getElementById( 'nl-form' ) );
 		</script>
 	</body>
 </html>
