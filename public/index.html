@@ -113,7 +113,7 @@
 						        result.innerHTML = '<h3>' + b[i].name + '</h3>' + 
 						        	'<p>' + b[i].location.address1 + '</p>' + 
 						        	'<p>' + b[i].location.city + ', ' + b[i].location.state + ' ' + b[i].location.zip_code + '</p>' + 
-						        	'<p>' + b[i].price + ' • ' + b[i].rating + ' &starf;</p>';
+						        	'<p>' + b[i].price + ' • ' + b[i].rating + ' &starf; • <a href="' + b[i].url + '">View on Yelp</a></p>';
 						        result.dataset.latitude = b[i].coordinates.latitude;
 						        result.dataset.longitude = b[i].coordinates.longitude;
 						        result.dataset.name = b[i].name;
