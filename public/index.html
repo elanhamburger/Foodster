@@ -69,8 +69,10 @@
 					for(var pair of formData.entries()) {
 					   request.push(pair[0] + '=' + pair[1]);
 					}
-					request.push('latitude=' + locationGuess.coords.latitude);
-					request.push('longitude=' + locationGuess.coords.longitude);
+					if (locationGuess) {
+						request.push('latitude=' + locationGuess.coords.latitude);
+						request.push('longitude=' + locationGuess.coords.longitude);
+					}
 
 					var xhr = new XMLHttpRequest();
 					xhr.open("POST", "/query");
